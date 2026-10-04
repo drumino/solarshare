@@ -1,0 +1,18 @@
+:root { --ad-navy: #0b1b2e; --ad-sun: #f59e0b; --ad-bg: #f1f5f9; }
+body { background: var(--ad-bg); font-family: system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+.sidebar { width: 260px; min-height: 100vh; background: var(--ad-navy); position: fixed; inset: 0 auto 0 0; overflow-y: auto; z-index: 1030; }
+.sidebar .brand { color: #fff; font-weight: 800; font-size: 1.25rem; padding: 1.2rem 1.25rem; display: block; text-decoration: none; }
+.sidebar .brand i { color: var(--ad-sun); }
+.sidebar .group { color: #64748b; font-size: .7rem; text-transform: uppercase; letter-spacing: .08em; padding: 1rem 1.25rem .35rem; }
+.sidebar .nav-link { color: #cbd5e1; padding: .5rem 1.25rem; border-left: 3px solid transparent; }
+.sidebar .nav-link:hover { background: rgba(255,255,255,.05); color: #fff; }
+.sidebar .nav-link.active { background: rgba(245,158,11,.12); color: #fff; border-left-color: var(--ad-sun); }
+.sidebar .nav-link i { width: 1.4rem; display: inline-block; }
+.main { margin-left: 260px; }
+.topbar { background: #fff; border-bottom: 1px solid #e2e8f0; padding: .75rem 1.5rem; }
+.kpi { border: 0; border-radius: .9rem; box-shadow: 0 .15rem .5rem rgba(15,23,42,.06); }
+.kpi .icon { width: 46px; height: 46px; border-radius: .75rem; display: flex; align-items: center; justify-content: center; font-size: 1.4rem; }
+.card-ad { border: 0; border-radius: .9rem; box-shadow: 0 .15rem .5rem rgba(15,23,42,.06); }
+.table thead th { font-size: .75rem; text-transform: uppercase; letter-spacing: .05em; color: #64748b; border-bottom-width: 1px; }
+.ai-chip { background: #ede9fe; color: #5b21b6; border-radius: 999px; padding: .15rem .6rem; font-size: .75rem; font-weight: 600; }
+@media (max-width: 991px) { .sidebar { position: static; width: 100%; min-height: auto; } .main { margin-left: 0; } }
