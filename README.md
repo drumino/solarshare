@@ -1,7 +1,7 @@
-# SolarShare — Utilisateurs & Catalogue
+# SolarShare — Utilisateurs, Catalogue & Disponibilité
 
 Plateforme de **location et de partage d'équipements d'énergie renouvelable** entre particuliers.
-Cette base contient le socle commun (authentification, rôles, templates), le **module utilisateurs** et le **module 1 — Catalogue**.
+Cette base contient le socle commun (authentification, rôles, templates), le **module utilisateurs**, le **module 1 — Catalogue** et le **module 2 — Disponibilité & maintenance**.
 
 **Stack** : Laravel 12 · Blade · Eloquent ORM · SQLite (MySQL possible) · Bootstrap 5 · Chart.js · GitHub
 
@@ -103,8 +103,23 @@ php artisan test
   protections du dernier administrateur, mise à jour du profil et du mot de passe.
 - `tests/Feature/CatalogueTest.php` : catalogue public (équipements disponibles uniquement), proposition en attente de
   validation, champs conditionnels, CRUD admin, suggestion de prix par le moteur local.
+- `tests/Feature/MaintenanceModuleTest.php` : planning d'entretien, périodes qui se chevauchent, protection du propriétaire et supervision admin.
 
-## 6. Pour aller plus loin
+## 6. Module 2 — Disponibilité & maintenance
+
+| | Fichiers |
+|---|---|
+| **Modèle** | `Models/MaintenanceRecord` — période, motif, statut, coût et résolution |
+| **Front office** | `Front/MaintenanceController`, vues `front/maintenance/*` |
+| **Back office** | `Admin/MaintenanceController`, vue `admin/maintenance/index` |
+| **Validation** | `Requests/MaintenanceRecordRequest` |
+
+- Les propriétaires gèrent leurs équipements à `/mes-equipements` et enregistrent les indisponibilités à `/mes-equipements/{equipment}/maintenance`.
+- Une intervention `scheduled` ou `in_progress` rend l'équipement indisponible entre ses deux dates, et le masque du catalogue pendant cette période.
+- Les périodes actives qui se chevauchent pour un même équipement sont refusées.
+- Les interventions futures apparaissent sur la fiche publique ; les administrateurs disposent de la liste `/admin/maintenance`.
+
+## 7. Pour aller plus loin
 
 - Docker + SonarQube.
 - Passage à MySQL : modifier `DB_*` dans `.env`.

@@ -34,6 +34,15 @@ class UserModuleTest extends TestCase
         $this->assertDatabaseHas('users', ['email' => 'nouveau@example.com', 'role' => 'user']);
     }
 
+    public function test_regular_user_is_not_redirected_to_a_saved_admin_url_after_login(): void
+    {
+        $user = User::factory()->create(['password' => 'Password123']);
+
+        $this->get('/admin')->assertRedirect('/connexion');
+        $this->post('/connexion', ['email' => $user->email, 'password' => 'Password123'])
+            ->assertRedirect('/');
+    }
+
     public function test_admin_area_requires_admin_role(): void
     {
         $this->get('/admin')->assertRedirect('/connexion');

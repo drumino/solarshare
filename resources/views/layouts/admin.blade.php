@@ -19,6 +19,9 @@
             ['admin.categories.*', 'admin.categories.index', 'bi-tags', 'Catégories'],
             ['admin.equipment.*', 'admin.equipment.index', 'bi-lightning-charge', 'Équipements'],
         ],
+        'Module 2 · Disponibilité' => [
+            ['admin.maintenance.*', 'admin.maintenance.index', 'bi-calendar-x', 'Maintenance'],
+        ],
     ];
 @endphp
 

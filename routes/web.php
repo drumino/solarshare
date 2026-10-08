@@ -28,6 +28,13 @@ Route::middleware('auth')->group(function () {
     Route::post('/equipements', [Front\EquipmentController::class, 'store'])->name('front.equipment.store');
     Route::post('/ia/equipement/description', [Front\EquipmentController::class, 'aiDescription'])->name('front.ai.description');
     Route::post('/ia/equipement/prix', [Front\EquipmentController::class, 'aiPrice'])->name('front.ai.price');
+
+    // MODULE — Disponibilité et maintenance (propriétaire)
+    Route::get('/mes-equipements', [Front\MaintenanceController::class, 'index'])->name('front.maintenance.index');
+    Route::get('/mes-equipements/{equipment}/maintenance', [Front\MaintenanceController::class, 'manage'])->name('front.maintenance.manage');
+    Route::post('/mes-equipements/{equipment}/maintenance', [Front\MaintenanceController::class, 'store'])->name('front.maintenance.store');
+    Route::put('/mes-equipements/{equipment}/maintenance/{record}', [Front\MaintenanceController::class, 'update'])->name('front.maintenance.update');
+    Route::delete('/mes-equipements/{equipment}/maintenance/{record}', [Front\MaintenanceController::class, 'destroy'])->name('front.maintenance.destroy');
 });
 Route::get('/equipements/{equipment}', [Front\EquipmentController::class, 'show'])->name('front.equipment.show');
 
@@ -52,4 +59,7 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
     // MODULE 1 — Catalogue
     Route::resource('categories', Admin\CategoryController::class)->except('show');
     Route::resource('equipment', Admin\EquipmentController::class)->except('show');
+
+    // MODULE — Disponibilité et maintenance
+    Route::get('maintenance', [Admin\MaintenanceController::class, 'index'])->name('maintenance.index');
 });
