@@ -31,7 +31,13 @@ class AuthController extends Controller
 
         $request->session()->regenerate();
 
-        return redirect()->intended(Auth::user()->isAdmin() ? route('admin.dashboard') : route('front.home'));
+        // A regular user must never be redirected back to an admin URL that
+        // was saved as the intended destination before they authenticated.
+        if (! Auth::user()->isAdmin()) {
+            return redirect()->route('front.home');
+        }
+
+        return redirect()->intended(route('admin.dashboard'));
     }
 
     public function showRegister(): View
