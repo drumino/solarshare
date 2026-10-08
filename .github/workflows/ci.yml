@@ -1,5 +1,6 @@
 name: CI
 
+# Périmètre du projet : Module 3 (Avis & signalements) + Auth/Utilisateurs.
 on: [push, pull_request]
 
 jobs:
@@ -13,4 +14,5 @@ jobs:
           extensions: mbstring, pdo_sqlite, sqlite3
       - run: composer install --no-interaction --prefer-dist
       - run: cp .env.example .env && php artisan key:generate
+      - run: php artisan migrate:fresh --seed
       - run: php artisan test

@@ -17,20 +17,12 @@
         <button class="navbar-toggler" data-bs-toggle="collapse" data-bs-target="#nav"><span class="navbar-toggler-icon"></span></button>
         <div class="collapse navbar-collapse" id="nav">
             <ul class="navbar-nav me-auto">
-                <li class="nav-item"><a class="nav-link {{ request()->routeIs('front.home') ? 'active' : '' }}" href="{{ route('front.home') }}">Accueil</a></li>
-                <li class="nav-item"><a class="nav-link {{ request()->routeIs('front.equipment.index', 'front.equipment.show') ? 'active' : '' }}" href="{{ route('front.equipment.index') }}">Catalogue</a></li>
-                @auth
-                    <li class="nav-item"><a class="nav-link {{ request()->routeIs('front.profile.*') ? 'active' : '' }}" href="{{ route('front.profile.edit') }}">Mon profil</a></li>
-                    <li class="nav-item"><a class="nav-link {{ request()->routeIs('front.maintenance.*') ? 'active' : '' }}" href="{{ route('front.maintenance.index') }}">Mes équipements</a></li>
-                @endauth
             </ul>
             <div class="d-flex align-items-center gap-2">
                 @auth
-                    <a href="{{ route('front.equipment.create') }}" class="btn btn-sun btn-sm"><i class="bi bi-plus-lg"></i> Proposer un équipement</a>
                     <div class="dropdown">
                         <button class="btn btn-outline-light btn-sm dropdown-toggle" data-bs-toggle="dropdown"><i class="bi bi-person-circle"></i> {{ auth()->user()->name }}</button>
                         <ul class="dropdown-menu dropdown-menu-end">
-                            <li><a class="dropdown-item" href="{{ route('front.profile.edit') }}"><i class="bi bi-person-gear"></i> Mon profil</a></li>
                             @if(auth()->user()->isAdmin())
                                 <li><a class="dropdown-item" href="{{ route('admin.dashboard') }}"><i class="bi bi-speedometer2"></i> Back office</a></li>
                                 <li><hr class="dropdown-divider"></li>

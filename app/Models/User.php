@@ -11,8 +11,6 @@ class User extends Authenticatable
 {
     use HasFactory, Notifiable;
 
-    public const ROLES = ['admin' => 'Administrateur', 'user' => 'Utilisateur'];
-
     protected $fillable = ['name', 'email', 'password', 'role', 'phone', 'city'];
 
     protected $hidden = ['password', 'remember_token'];
@@ -35,9 +33,8 @@ class User extends Authenticatable
         return $this->hasMany(Equipment::class, 'owner_id');
     }
 
-    /** Vrai si cet utilisateur est le seul administrateur restant. */
-    public function isLastAdmin(): bool
+    public function reservations(): HasMany
     {
-        return $this->isAdmin() && static::where('role', 'admin')->count() === 1;
+        return $this->hasMany(Reservation::class);
     }
 }

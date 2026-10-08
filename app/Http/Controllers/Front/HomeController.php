@@ -3,9 +3,7 @@
 namespace App\Http\Controllers\Front;
 
 use App\Http\Controllers\Controller;
-use App\Models\Category;
-use App\Models\Equipment;
-use App\Models\User;
+use App\Models\Review;
 use Illuminate\View\View;
 
 class HomeController extends Controller
@@ -13,13 +11,13 @@ class HomeController extends Controller
     public function index(): View
     {
         return view('front.home', [
-            'categories' => Category::withCount(['equipment' => fn ($q) => $q->available()])->get(),
-            'featured' => Equipment::available()->with('category')->latest()->take(6)->get(),
             'stats' => [
-                'equipment' => Equipment::available()->count(),
-                'members' => User::where('role', 'user')->count(),
-                'cities' => Equipment::available()->distinct('city')->count('city'),
+                'equipment' => \App\Models\Equipment::available()->count(),
+                'rentals' => \App\Models\Reservation::where('status', 'completed')->count(),
+                'cities' => \App\Models\Equipment::available()->distinct('city')->count('city'),
             ],
+            'latestReviews' => Review::where('is_visible', true)
+                ->with(['equipment', 'user'])->latest()->take(6)->get(),
         ]);
     }
 }

@@ -3,20 +3,17 @@
 @section('heading', 'Tableau de bord')
 @section('content')
 @php
+    $tr = fn ($data, $labels) => collect($data)->mapWithKeys(fn ($v, $k) => [($labels[$k] ?? $k) => $v]);
     $kpiCards = [
         ['Utilisateurs', $kpis['users'], 'bi-people', 'primary'],
-        ['Administrateurs', $kpis['admins'], 'bi-shield-lock', 'dark'],
-        ['Membres', $kpis['members'], 'bi-person', 'success'],
-        ['Inscrits ce mois-ci', $kpis['new_this_month'], 'bi-person-plus', 'warning'],
-        ['Catégories', $kpis['categories'], 'bi-tags', 'secondary'],
-        ['Équipements', $kpis['equipment'], 'bi-lightning-charge', 'warning'],
-        ['Disponibles', $kpis['available_equipment'], 'bi-check-circle', 'success'],
-        ['À valider', $kpis['pending_equipment'], 'bi-hourglass-split', 'danger'],
+        ['Avis', $kpis['reviews'], 'bi-chat-heart', 'info'],
+        ['Avis visibles', $kpis['visible_reviews'], 'bi-eye', 'success'],
+        ['Avis masqués', $kpis['hidden_reviews'], 'bi-eye-slash', 'warning'],
+        ['Signalements ouverts', $kpis['open_reports'], 'bi-flag', 'secondary'],
+        ['Note moyenne', $kpis['avg_rating'].' / 5', 'bi-star-fill', 'warning'],
     ];
-    $tr = fn ($data, $labels) => collect($data)->mapWithKeys(fn ($v, $k) => [($labels[$k] ?? $k) => $v]);
-    $role = $tr($byRole, \App\Models\User::ROLES);
-    $type = $tr($byType, \App\Models\Equipment::TYPES);
-    $status = $tr($byStatus, \App\Models\Equipment::STATUSES);
+    $sent = $tr($bySentiment, \App\Models\Review::SENTIMENTS);
+    $rep = $tr($byReportStatus, \App\Models\ReviewReport::STATUSES);
 @endphp
 
 <div class="row g-3 mb-4">
@@ -31,27 +28,24 @@
 </div>
 
 <div class="row g-3 mb-4">
-    <div class="col-lg-6"><div class="card card-ad p-3"><h2 class="h6">Utilisateurs par rôle</h2><canvas id="chRole" height="160"></canvas></div></div>
-    <div class="col-lg-6"><div class="card card-ad p-3"><h2 class="h6">Utilisateurs par ville</h2><canvas id="chCity" height="160"></canvas></div></div>
-    <div class="col-lg-6"><div class="card card-ad p-3"><h2 class="h6">Équipements par type</h2><canvas id="chType" height="160"></canvas></div></div>
-    <div class="col-lg-6"><div class="card card-ad p-3"><h2 class="h6">Équipements par statut</h2><canvas id="chStatus" height="160"></canvas></div></div>
+    <div class="col-lg-6"><div class="card card-ad p-3"><h2 class="h6">Sentiment des avis <span class="ai-chip">IA</span></h2><canvas id="chSent" height="160"></canvas></div></div>
+    <div class="col-lg-6"><div class="card card-ad p-3"><h2 class="h6">Signalements par statut</h2><canvas id="chRep" height="160"></canvas></div></div>
 </div>
 
 <div class="card card-ad">
-    <div class="card-header bg-white fw-semibold d-flex justify-content-between">
-        <span>Dernières inscriptions</span>
-        <a href="{{ route('admin.users.index') }}" class="small">Tout voir <i class="bi bi-arrow-right"></i></a>
-    </div>
+    <div class="card-header bg-white fw-semibold">Derniers avis</div>
     <div class="table-responsive"><table class="table mb-0 align-middle">
-        <thead><tr><th>Nom</th><th>E-mail</th><th>Ville</th><th>Rôle</th><th>Inscrit le</th></tr></thead>
+        <thead><tr><th>Équipement</th><th>Auteur</th><th>Note</th><th>Sentiment</th><th>Visible</th><th></th></tr></thead>
         <tbody>
-        @foreach($latestUsers as $u)
-            <tr><td>{{ $u->name }}</td><td>{{ $u->email }}</td><td>{{ $u->city ?? '—' }}</td>
-                <td><x-badge :status="$u->role" :labels="\App\Models\User::ROLES" /></td>
-                <td>{{ $u->created_at->format('d/m/Y') }}</td></tr>
+        @foreach($latestReviews as $r)
+            <tr><td>{{ $r->equipment->title }}</td><td>{{ $r->user->name }}</td>
+                <td><x-stars :rating="$r->rating" /></td>
+                <td><x-badge :status="$r->sentiment" :labels="\App\Models\Review::SENTIMENTS" /></td>
+                <td>{!! $r->is_visible ? '<i class="bi bi-eye text-success"></i>' : '<i class="bi bi-eye-slash text-danger"></i>' !!}</td>
+                <td class="text-end text-nowrap"><a href="{{ route('admin.reviews.edit', $r) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a></td>
+            </tr>
         @endforeach
-        </tbody></table></div>
-</div>
+        </tbody></table></div></div>
 @endsection
 
 @push('scripts')
@@ -63,9 +57,7 @@ const mk = (id, type, data) => new Chart(document.getElementById(id), {
   data: { labels: Object.keys(data), datasets: [{ data: Object.values(data), backgroundColor: palette, borderWidth: 0 }] },
   options: { plugins: { legend: { display: type !== 'bar', position: 'bottom' } }, scales: type === 'bar' ? { y: { beginAtZero: true, ticks: { precision: 0 } } } : {} },
 });
-mk('chRole', 'doughnut', @json($role));
-mk('chCity', 'bar', @json($byCity));
-mk('chType', 'bar', @json($type));
-mk('chStatus', 'doughnut', @json($status));
+mk('chSent', 'doughnut', @json($sent));
+mk('chRep', 'doughnut', @json($rep));
 </script>
 @endpush

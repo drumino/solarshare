@@ -1,7 +1,11 @@
-# SolarShare — Utilisateurs, Catalogue & Disponibilité
+# SolarShare — Projet Applications Web Avancées 2026-2027 (5 TWIN)
 
-Plateforme de **location et de partage d'équipements d'énergie renouvelable** entre particuliers.
-Cette base contient le socle commun (authentification, rôles, templates), le **module utilisateurs**, le **module 1 — Catalogue** et le **module 2 — Disponibilité & maintenance**.
+Plateforme de **location et de partage d'équipements d'énergie renouvelable** entre particuliers
+(panneaux solaires portables, batteries, mini-éoliennes, onduleurs).
+
+**Périmètre conservé** : **Module 3 — Avis & signalements** + **Auth/Utilisateurs** (tâche commune).
+Les modules 1 (catalogue), 2 (réservations & paiements) et 4 (incidents & maintenance) ont été retirés ;
+les modèles `Equipment`, `Category` et `Reservation` restent en place comme dépendances de données des avis.
 
 **Stack** : Laravel 12 · Blade · Eloquent ORM · SQLite (MySQL possible) · Bootstrap 5 · Chart.js · GitHub
 
@@ -12,13 +16,13 @@ Cette base contient le socle commun (authentification, rôles, templates), le **
 Prérequis : PHP 8.2+, Composer.
 
 ```bash
-composer install
-cp .env.example .env
-php artisan key:generate
-php artisan migrate:fresh --seed
-php artisan storage:link   # photos des équipements
+bash setup.sh        # Linux / macOS / Git Bash
+setup.bat            # Windows
+cd solarshare
 php artisan serve    # http://127.0.0.1:8000
 ```
+
+Le script : `composer create-project laravel/laravel:^12` → copie le code SolarShare → `migrate:fresh --seed` → `storage:link`.
 
 ### Comptes de démonstration
 
@@ -29,69 +33,55 @@ php artisan serve    # http://127.0.0.1:8000
 | Utilisateur | leila@example.com | Password123 |
 | Utilisateur | karim@example.com | Password123 |
 
----
+### Fonctionnalité IA (optionnel)
 
-## 2. Socle commun
-
-- **Authentification** : `Auth/AuthController` (inscription, connexion, déconnexion), vues `resources/views/auth/`.
-- **Rôles** : colonne `users.role` (`admin` / `user`), middleware `role` (`Http/Middleware/EnsureRole`).
-- **Templates Blade** : front office `layouts/front.blade.php` · back office `layouts/admin.blade.php`.
-- **Composants de formulaire** : `resources/views/components/form/*` (`input`, `select`, `textarea`), `x-badge`, `partials/flash`, `partials/delete`.
-
-> Pour intégrer un template tiers, remplacer le contenu de `layouts/front.blade.php` et `layouts/admin.blade.php`
-> en conservant `@yield('content')`, `@stack('scripts')` et le menu.
-
-## 3. Module utilisateurs
-
-| | Fichiers |
-|---|---|
-| **Modèle** | `Models/User` — `ROLES`, `isAdmin()`, `isLastAdmin()` |
-| **CRUD (back office)** | `Admin/UserController`, vues `admin/users/{index,form}` |
-| **Profil (front office)** | `Front/ProfileController`, vue `front/profile/edit` |
-| **Validation** | `Requests/UserRequest` |
-| **Tableau de bord** | `Admin/DashboardController` — KPI, utilisateurs par rôle / ville (Chart.js), dernières inscriptions |
-
-### Routes
-
-| Méthode | URL | Nom |
-|---|---|---|
-| GET | `/admin/users` (recherche `q`, filtre `role`) | `admin.users.index` |
-| GET / POST | `/admin/users/create`, `/admin/users` | `admin.users.create` / `store` |
-| GET / PUT | `/admin/users/{user}/edit`, `/admin/users/{user}` | `admin.users.edit` / `update` |
-| DELETE | `/admin/users/{user}` | `admin.users.destroy` |
-| GET / PUT | `/mon-profil` | `front.profile.edit` / `update` |
-| PUT | `/mon-profil/mot-de-passe` | `front.profile.password` |
-
-### Règles métier et validation
-
-- E-mail unique (ignoré pour l'utilisateur modifié), téléphone `^[0-9+\s]{8,15}$`, rôle `admin` ou `user`.
-- Mot de passe : 8 caractères minimum, lettres et chiffres, confirmation obligatoire. Il est requis à la création ; laissé vide à la modification, il reste inchangé.
-- Un administrateur ne peut pas supprimer son propre compte.
-- Le dernier administrateur ne peut être ni supprimé ni rétrogradé (`UserRequest::after()`).
-- Le changement de mot de passe depuis le profil exige le mot de passe actuel (`current_password`).
-
-## 4. Module 1 — Catalogue
-
-| | Fichiers |
-|---|---|
-| **Modèles** | `Models/Category`, `Models/Equipment` (jointure `equipment ⟷ categories ⟷ users`) |
-| **CRUD (back office)** | `Admin/CategoryController`, `Admin/EquipmentController`, vues `admin/categories/*`, `admin/equipment/*` |
-| **Front office** | `Front/EquipmentController` — catalogue filtré/trié, fiche équipement, proposition d'annonce |
-| **Validation** | `Requests/CategoryRequest`, `Requests/EquipmentRequest` |
-| **IA** | `Services/Ai/EquipmentAssistant` + `Services/Ai/LlmClient`, boutons AJAX dans `public/js/equipment-form.js` |
-
-- **Formulaires avancés** : `EquipmentRequest` — champs conditionnels (puissance requise si panneau/éolien/onduleur,
-  capacité si batterie, `Rule::requiredIf`), upload image (type, taille, dimensions).
-- **Workflow** : un équipement proposé depuis le front est créé `pending` et n'apparaît au catalogue qu'après validation
-  (`available`) par un administrateur. Une catégorie utilisée par des équipements ne peut pas être supprimée.
-- **IA** : `describe()` rédige l'annonce (LLM), `suggestPrice()` propose un prix (formule technique + moyenne du marché).
-
-### Fonctionnalités IA (optionnel)
-
-- Par défaut (`AI_DRIVER=none`) : **moteur local** (règles + statistiques). Aucune clé requise.
+- Par défaut (`AI_DRIVER=none`) : **moteur local** (règles + statistiques) pour l'analyse d'avis. Aucune clé requise.
 - Avec un LLM : renseigner `AI_DRIVER` (`anthropic` ou `openai`), `AI_API_KEY`, `AI_MODEL` dans `.env`.
 - Compatible Ollama / Groq via `AI_DRIVER=openai` + `AI_BASE_URL`.
 - Si l'API échoue, l'application bascule automatiquement sur le moteur local.
+
+---
+
+## 2. Tâches communes (toute l'équipe)
+
+- **Authentification** : `Auth/AuthController`, vues `resources/views/auth/`, middleware `role`.
+- **Templates Blade** : front office `layouts/front.blade.php` · back office `layouts/admin.blade.php`.
+- **Composants de formulaire** : `resources/views/components/form/*`.
+- **Module utilisateurs** : réservé (aucun étudiant ne le prend).
+- **GitHub** : un dépôt, une branche par module (`feature/module-3-avis`…), pull requests obligatoires.
+
+> Les templates sont réalisés en Bootstrap 5. Pour intégrer un template tiers, remplacer le contenu de
+> `layouts/front.blade.php` et `layouts/admin.blade.php` en conservant `@yield('content')`, `@stack('scripts')` et le menu.
+
+---
+
+## 3. Module conservé — Avis & signalements
+
+- **CRUD back office** : `Admin/ReviewController`, `Admin/ReviewReportController` (jointure `reviews ⟷ equipment ⟷ users`, `review_reports ⟷ reviews`).
+- **Front office** : `Front/ReviewController` (avis après location terminée, signalement).
+- **Formulaires avancés** : `ReviewRequest`, `ReviewReportRequest` (`required_if:reason,other`).
+- **IA** : `Services/Ai/ReviewAnalyzer` — sentiment (positif/neutre/négatif, score −1…1) et modération automatique : un avis toxique ou contenant un lien est masqué en attente de décision.
+
+### Modules retirés
+
+- ~~Module 1 — Catalogue~~ (contrôleurs, vues et routes supprimés).
+- ~~Module 2 — Réservations & paiements~~ (contrôleurs, vues et routes supprimés ; `Reservation` conservée comme dépendance des avis).
+- ~~Module 4 — Incidents & maintenance~~ (contrôleurs, vues et routes supprimés).
+
+---
+
+## 4. Conformité au cahier des charges
+
+| Exigence | Réalisation |
+|---|---|
+| Laravel 12 | Squelette officiel `^12.0` |
+| 2 templates Blade (front + back) | `layouts/front`, `layouts/admin` |
+| ORM pour la persistance | **Eloquent** (ORM de Laravel) — modèles + relations |
+| Formulaires avancés + validation | `ReviewRequest`, `ReviewReportRequest`, composants Blade, règles métier |
+| CRUD avec jointure | Avis et signalements, listes construites avec `join()` + `with()` |
+| Fonctionnalité avancée IA | Analyse de sentiment + modération auto, avec repli local |
+| Authentification | Inscription, connexion, rôles `admin` / `user` |
+| Plateforme collaborative | GitHub + `.github/workflows/ci.yml` |
 
 ## 5. Tests
 
@@ -99,28 +89,10 @@ php artisan serve    # http://127.0.0.1:8000
 php artisan test
 ```
 
-- `tests/Feature/UserModuleTest.php` : pages publiques, inscription, accès admin, CRUD utilisateurs, unicité de l'e-mail,
-  protections du dernier administrateur, mise à jour du profil et du mot de passe.
-- `tests/Feature/CatalogueTest.php` : catalogue public (équipements disponibles uniquement), proposition en attente de
-  validation, champs conditionnels, CRUD admin, suggestion de prix par le moteur local.
-- `tests/Feature/MaintenanceModuleTest.php` : planning d'entretien, périodes qui se chevauchent, protection du propriétaire et supervision admin.
+`tests/Feature/SolarShareTest.php` : pages publiques, pages des modules retirés (404), accès admin, modération d'avis, analyse de sentiment.
 
-## 6. Module 2 — Disponibilité & maintenance
+## 6. Pour aller plus loin
 
-| | Fichiers |
-|---|---|
-| **Modèle** | `Models/MaintenanceRecord` — période, motif, statut, coût et résolution |
-| **Front office** | `Front/MaintenanceController`, vues `front/maintenance/*` |
-| **Back office** | `Admin/MaintenanceController`, vue `admin/maintenance/index` |
-| **Validation** | `Requests/MaintenanceRecordRequest` |
-
-- Les propriétaires gèrent leurs équipements à `/mes-equipements` et enregistrent les indisponibilités à `/mes-equipements/{equipment}/maintenance`.
-- Une intervention `scheduled` ou `in_progress` rend l'équipement indisponible entre ses deux dates, et le masque du catalogue pendant cette période.
-- Les périodes actives qui se chevauchent pour un même équipement sont refusées.
-- Les interventions futures apparaissent sur la fiche publique ; les administrateurs disposent de la liste `/admin/maintenance`.
-
-## 7. Pour aller plus loin
-
-- Docker + SonarQube.
+- Docker + SonarQube (diapo « Technologies DevOps »).
 - Passage à MySQL : modifier `DB_*` dans `.env`.
-- Policies Laravel pour remplacer les contrôles dans les contrôleurs.
+- Policies Laravel pour remplacer les contrôles `abort_unless`.

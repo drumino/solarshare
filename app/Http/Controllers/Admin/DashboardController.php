@@ -3,8 +3,8 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Category;
-use App\Models\Equipment;
+use App\Models\Review;
+use App\Models\ReviewReport;
 use App\Models\User;
 use Illuminate\View\View;
 
@@ -12,22 +12,20 @@ class DashboardController extends Controller
 {
     public function index(): View
     {
+        $openReports = ReviewReport::where('status', 'open')->count();
+
         return view('admin.dashboard', [
             'kpis' => [
                 'users' => User::count(),
-                'admins' => User::where('role', 'admin')->count(),
-                'members' => User::where('role', 'user')->count(),
-                'new_this_month' => User::where('created_at', '>=', now()->startOfMonth())->count(),
-                'categories' => Category::count(),
-                'equipment' => Equipment::count(),
-                'available_equipment' => Equipment::available()->count(),
-                'pending_equipment' => Equipment::where('status', 'pending')->count(),
+                'reviews' => Review::count(),
+                'visible_reviews' => Review::where('is_visible', true)->count(),
+                'hidden_reviews' => Review::where('is_visible', false)->count(),
+                'open_reports' => $openReports,
+                'avg_rating' => round((float) Review::where('is_visible', true)->avg('rating'), 1),
             ],
-            'byRole' => User::selectRaw('role, count(*) as total')->groupBy('role')->pluck('total', 'role'),
-            'byCity' => User::whereNotNull('city')->selectRaw('city, count(*) as total')->groupBy('city')->orderByDesc('total')->pluck('total', 'city'),
-            'byType' => Equipment::selectRaw('type, count(*) as total')->groupBy('type')->pluck('total', 'type'),
-            'byStatus' => Equipment::selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status'),
-            'latestUsers' => User::latest()->take(6)->get(),
+            'bySentiment' => Review::selectRaw('sentiment, count(*) as total')->groupBy('sentiment')->pluck('total', 'sentiment'),
+            'byReportStatus' => ReviewReport::selectRaw('status, count(*) as total')->groupBy('status')->pluck('total', 'status'),
+            'latestReviews' => Review::with(['equipment', 'user'])->latest()->take(6)->get(),
         ]);
     }
 }

@@ -54,20 +54,19 @@ class Equipment extends Model
         return $this->belongsTo(User::class, 'owner_id');
     }
 
-    public function maintenanceRecords(): HasMany
+    public function reservations(): HasMany
     {
-        return $this->hasMany(MaintenanceRecord::class);
+        return $this->hasMany(Reservation::class);
+    }
+
+    public function reviews(): HasMany
+    {
+        return $this->hasMany(Review::class);
     }
 
     public function scopeAvailable(Builder $query): Builder
     {
         return $query->where('status', 'available');
-    }
-
-    /** Whether a planned or ongoing maintenance block covers this date. */
-    public function isUnavailableOn($date): bool
-    {
-        return $this->maintenanceRecords()->blockingOn($date)->exists();
     }
 
     public function getImageUrlAttribute(): ?string
@@ -78,5 +77,12 @@ class Equipment extends Model
     public function getTypeLabelAttribute(): string
     {
         return self::TYPES[$this->type] ?? $this->type;
+    }
+
+    public function getAverageRatingAttribute(): ?float
+    {
+        $avg = $this->reviews()->where('is_visible', true)->avg('rating');
+
+        return $avg ? round($avg, 1) : null;
     }
 }

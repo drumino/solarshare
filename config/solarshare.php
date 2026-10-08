@@ -4,10 +4,10 @@ return [
 
     /*
     |--------------------------------------------------------------------------
-    | Fonctionnalités IA
+    | Fonctionnalité IA (avis & signalements : analyse de sentiment)
     |--------------------------------------------------------------------------
     | driver : none | anthropic | openai (API compatible OpenAI : OpenAI, Groq, Ollama...)
-    | Sans clé API (driver "none"), chaque fonctionnalité IA utilise un moteur
+    | Sans clé API (driver "none"), l'analyse d'avis utilise un moteur
     | de secours local (règles + statistiques) : l'application reste utilisable.
     */
     'ai' => [
@@ -17,4 +17,5 @@ return [
         'base_url' => env('AI_BASE_URL'),
         'timeout'  => (int) env('AI_TIMEOUT', 20),
     ],
+
 ];
