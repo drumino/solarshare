@@ -36,17 +36,6 @@
             <div class="price-tag fs-3">{{ number_format($equipment->price_per_day, 2) }} DT<small class="fs-6 text-muted fw-normal"> / jour</small></div>
             <div class="small text-muted mb-3">Caution : {{ number_format($equipment->deposit, 2) }} DT</div>
 
-            <h2 class="h6 mt-3"><i class="bi bi-calendar-range"></i> Disponibilité</h2>
-            @if($equipment->maintenanceRecords->isEmpty())
-                <p class="small text-success"><i class="bi bi-check-circle"></i> Aucune indisponibilité programmée.</p>
-            @else
-                <ul class="small ps-3 mb-3">
-                    @foreach($equipment->maintenanceRecords as $maintenance)
-                        <li><span class="fw-semibold">Indisponible</span> du {{ $maintenance->starts_on->format('d/m/Y') }} au {{ $maintenance->ends_on->format('d/m/Y') }}<br><span class="text-muted">{{ $maintenance->reason_label }}</span></li>
-                    @endforeach
-                </ul>
-            @endif
-
             <h2 class="h6 mt-2"><i class="bi bi-person-circle"></i> Propriétaire</h2>
             <p class="mb-1 fw-semibold">{{ $equipment->owner->name }}</p>
             @if($equipment->owner->city)<p class="mb-1 small text-muted"><i class="bi bi-geo-alt"></i> {{ $equipment->owner->city }}</p>@endif

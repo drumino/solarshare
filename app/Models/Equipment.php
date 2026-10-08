@@ -5,7 +5,6 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Equipment extends Model
 {
@@ -54,20 +53,9 @@ class Equipment extends Model
         return $this->belongsTo(User::class, 'owner_id');
     }
 
-    public function maintenanceRecords(): HasMany
-    {
-        return $this->hasMany(MaintenanceRecord::class);
-    }
-
     public function scopeAvailable(Builder $query): Builder
     {
         return $query->where('status', 'available');
-    }
-
-    /** Whether a planned or ongoing maintenance block covers this date. */
-    public function isUnavailableOn($date): bool
-    {
-        return $this->maintenanceRecords()->blockingOn($date)->exists();
     }
 
     public function getImageUrlAttribute(): ?string

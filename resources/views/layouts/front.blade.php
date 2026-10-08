@@ -21,7 +21,6 @@
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('front.equipment.index', 'front.equipment.show') ? 'active' : '' }}" href="{{ route('front.equipment.index') }}">Catalogue</a></li>
                 @auth
                     <li class="nav-item"><a class="nav-link {{ request()->routeIs('front.profile.*') ? 'active' : '' }}" href="{{ route('front.profile.edit') }}">Mon profil</a></li>
-                    <li class="nav-item"><a class="nav-link {{ request()->routeIs('front.maintenance.*') ? 'active' : '' }}" href="{{ route('front.maintenance.index') }}">Mes équipements</a></li>
                 @endauth
             </ul>
             <div class="d-flex align-items-center gap-2">

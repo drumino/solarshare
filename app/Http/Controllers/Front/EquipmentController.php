@@ -31,8 +31,6 @@ class EquipmentController extends Controller
             ->join('categories', 'categories.id', '=', 'equipment.category_id')
             ->select('equipment.*', 'categories.name as category_name')
             ->where('equipment.status', 'available')
-            // Do not list equipment while it has an active maintenance block.
-            ->whereDoesntHave('maintenanceRecords', fn ($q) => $q->blockingOn(today()))
             ->when($filters['q'] ?? null, fn ($q, $v) => $q->where(fn ($w) => $w
                 ->where('equipment.title', 'like', "%{$v}%")
                 ->orWhere('categories.name', 'like', "%{$v}%")))
@@ -59,19 +57,9 @@ class EquipmentController extends Controller
 
     public function show(Equipment $equipment): View
     {
-        $canManage = $equipment->owner_id === auth()->id() || auth()->user()?->isAdmin();
-        abort_unless(
-            $canManage || ($equipment->status === 'available' && ! $equipment->isUnavailableOn(today())),
-            404
-        );
+        abort_unless($equipment->status === 'available' || $equipment->owner_id === auth()->id() || auth()->user()?->isAdmin(), 404);
 
-        $equipment->load([
-            'category', 'owner',
-            'maintenanceRecords' => fn ($query) => $query
-                ->whereIn('status', ['scheduled', 'in_progress'])
-                ->whereDate('ends_on', '>=', today())
-                ->orderBy('starts_on'),
-        ]);
+        $equipment->load(['category', 'owner']);
 
         return view('front.equipment.show', compact('equipment'));
     }
