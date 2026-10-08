@@ -8,8 +8,15 @@
         ['Administrateurs', $kpis['admins'], 'bi-shield-lock', 'dark'],
         ['Membres', $kpis['members'], 'bi-person', 'success'],
         ['Inscrits ce mois-ci', $kpis['new_this_month'], 'bi-person-plus', 'warning'],
+        ['Catégories', $kpis['categories'], 'bi-tags', 'secondary'],
+        ['Équipements', $kpis['equipment'], 'bi-lightning-charge', 'warning'],
+        ['Disponibles', $kpis['available_equipment'], 'bi-check-circle', 'success'],
+        ['À valider', $kpis['pending_equipment'], 'bi-hourglass-split', 'danger'],
     ];
-    $role = collect($byRole)->mapWithKeys(fn ($v, $k) => [(\App\Models\User::ROLES[$k] ?? $k) => $v]);
+    $tr = fn ($data, $labels) => collect($data)->mapWithKeys(fn ($v, $k) => [($labels[$k] ?? $k) => $v]);
+    $role = $tr($byRole, \App\Models\User::ROLES);
+    $type = $tr($byType, \App\Models\Equipment::TYPES);
+    $status = $tr($byStatus, \App\Models\Equipment::STATUSES);
 @endphp
 
 <div class="row g-3 mb-4">
@@ -26,6 +33,8 @@
 <div class="row g-3 mb-4">
     <div class="col-lg-6"><div class="card card-ad p-3"><h2 class="h6">Utilisateurs par rôle</h2><canvas id="chRole" height="160"></canvas></div></div>
     <div class="col-lg-6"><div class="card card-ad p-3"><h2 class="h6">Utilisateurs par ville</h2><canvas id="chCity" height="160"></canvas></div></div>
+    <div class="col-lg-6"><div class="card card-ad p-3"><h2 class="h6">Équipements par type</h2><canvas id="chType" height="160"></canvas></div></div>
+    <div class="col-lg-6"><div class="card card-ad p-3"><h2 class="h6">Équipements par statut</h2><canvas id="chStatus" height="160"></canvas></div></div>
 </div>
 
 <div class="card card-ad">
@@ -56,5 +65,7 @@ const mk = (id, type, data) => new Chart(document.getElementById(id), {
 });
 mk('chRole', 'doughnut', @json($role));
 mk('chCity', 'bar', @json($byCity));
+mk('chType', 'bar', @json($type));
+mk('chStatus', 'doughnut', @json($status));
 </script>
 @endpush

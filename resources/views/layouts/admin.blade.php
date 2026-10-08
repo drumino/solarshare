@@ -15,6 +15,10 @@
         'Module utilisateurs' => [
             ['admin.users.*', 'admin.users.index', 'bi-people', 'Utilisateurs'],
         ],
+        'Module 1 · Catalogue' => [
+            ['admin.categories.*', 'admin.categories.index', 'bi-tags', 'Catégories'],
+            ['admin.equipment.*', 'admin.equipment.index', 'bi-lightning-charge', 'Équipements'],
+        ],
     ];
 @endphp
 

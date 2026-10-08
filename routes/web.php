@@ -21,6 +21,16 @@ Route::middleware('guest')->group(function () {
 });
 Route::post('/deconnexion', [AuthController::class, 'logout'])->middleware('auth')->name('logout');
 
+// MODULE 1 — Catalogue
+Route::get('/equipements', [Front\EquipmentController::class, 'index'])->name('front.equipment.index');
+Route::middleware('auth')->group(function () {
+    Route::get('/equipements/proposer', [Front\EquipmentController::class, 'create'])->name('front.equipment.create');
+    Route::post('/equipements', [Front\EquipmentController::class, 'store'])->name('front.equipment.store');
+    Route::post('/ia/equipement/description', [Front\EquipmentController::class, 'aiDescription'])->name('front.ai.description');
+    Route::post('/ia/equipement/prix', [Front\EquipmentController::class, 'aiPrice'])->name('front.ai.price');
+});
+Route::get('/equipements/{equipment}', [Front\EquipmentController::class, 'show'])->name('front.equipment.show');
+
 // MODULE UTILISATEURS — profil
 Route::middleware('auth')->group(function () {
     Route::get('/mon-profil', [Front\ProfileController::class, 'edit'])->name('front.profile.edit');
@@ -38,4 +48,8 @@ Route::prefix('admin')->name('admin.')->middleware(['auth', 'role:admin'])->grou
 
     // MODULE UTILISATEURS
     Route::resource('users', Admin\UserController::class)->except('show');
+
+    // MODULE 1 — Catalogue
+    Route::resource('categories', Admin\CategoryController::class)->except('show');
+    Route::resource('equipment', Admin\EquipmentController::class)->except('show');
 });

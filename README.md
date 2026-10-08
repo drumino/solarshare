@@ -1,7 +1,7 @@
-# SolarShare — Module utilisateurs
+# SolarShare — Utilisateurs & Catalogue
 
 Plateforme de **location et de partage d'équipements d'énergie renouvelable** entre particuliers.
-Cette base contient le socle commun (authentification, rôles, templates) et le **module utilisateurs**.
+Cette base contient le socle commun (authentification, rôles, templates), le **module utilisateurs** et le **module 1 — Catalogue**.
 
 **Stack** : Laravel 12 · Blade · Eloquent ORM · SQLite (MySQL possible) · Bootstrap 5 · Chart.js · GitHub
 
@@ -16,6 +16,7 @@ composer install
 cp .env.example .env
 php artisan key:generate
 php artisan migrate:fresh --seed
+php artisan storage:link   # photos des équipements
 php artisan serve    # http://127.0.0.1:8000
 ```
 
@@ -69,16 +70,41 @@ php artisan serve    # http://127.0.0.1:8000
 - Le dernier administrateur ne peut être ni supprimé ni rétrogradé (`UserRequest::after()`).
 - Le changement de mot de passe depuis le profil exige le mot de passe actuel (`current_password`).
 
-## 4. Tests
+## 4. Module 1 — Catalogue
+
+| | Fichiers |
+|---|---|
+| **Modèles** | `Models/Category`, `Models/Equipment` (jointure `equipment ⟷ categories ⟷ users`) |
+| **CRUD (back office)** | `Admin/CategoryController`, `Admin/EquipmentController`, vues `admin/categories/*`, `admin/equipment/*` |
+| **Front office** | `Front/EquipmentController` — catalogue filtré/trié, fiche équipement, proposition d'annonce |
+| **Validation** | `Requests/CategoryRequest`, `Requests/EquipmentRequest` |
+| **IA** | `Services/Ai/EquipmentAssistant` + `Services/Ai/LlmClient`, boutons AJAX dans `public/js/equipment-form.js` |
+
+- **Formulaires avancés** : `EquipmentRequest` — champs conditionnels (puissance requise si panneau/éolien/onduleur,
+  capacité si batterie, `Rule::requiredIf`), upload image (type, taille, dimensions).
+- **Workflow** : un équipement proposé depuis le front est créé `pending` et n'apparaît au catalogue qu'après validation
+  (`available`) par un administrateur. Une catégorie utilisée par des équipements ne peut pas être supprimée.
+- **IA** : `describe()` rédige l'annonce (LLM), `suggestPrice()` propose un prix (formule technique + moyenne du marché).
+
+### Fonctionnalités IA (optionnel)
+
+- Par défaut (`AI_DRIVER=none`) : **moteur local** (règles + statistiques). Aucune clé requise.
+- Avec un LLM : renseigner `AI_DRIVER` (`anthropic` ou `openai`), `AI_API_KEY`, `AI_MODEL` dans `.env`.
+- Compatible Ollama / Groq via `AI_DRIVER=openai` + `AI_BASE_URL`.
+- Si l'API échoue, l'application bascule automatiquement sur le moteur local.
+
+## 5. Tests
 
 ```bash
 php artisan test
 ```
 
-`tests/Feature/UserModuleTest.php` : pages publiques, inscription, accès admin, CRUD utilisateurs, unicité de l'e-mail,
-protections du dernier administrateur, mise à jour du profil et du mot de passe.
+- `tests/Feature/UserModuleTest.php` : pages publiques, inscription, accès admin, CRUD utilisateurs, unicité de l'e-mail,
+  protections du dernier administrateur, mise à jour du profil et du mot de passe.
+- `tests/Feature/CatalogueTest.php` : catalogue public (équipements disponibles uniquement), proposition en attente de
+  validation, champs conditionnels, CRUD admin, suggestion de prix par le moteur local.
 
-## 5. Pour aller plus loin
+## 6. Pour aller plus loin
 
 - Docker + SonarQube.
 - Passage à MySQL : modifier `DB_*` dans `.env`.

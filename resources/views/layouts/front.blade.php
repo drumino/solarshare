@@ -18,12 +18,14 @@
         <div class="collapse navbar-collapse" id="nav">
             <ul class="navbar-nav me-auto">
                 <li class="nav-item"><a class="nav-link {{ request()->routeIs('front.home') ? 'active' : '' }}" href="{{ route('front.home') }}">Accueil</a></li>
+                <li class="nav-item"><a class="nav-link {{ request()->routeIs('front.equipment.index', 'front.equipment.show') ? 'active' : '' }}" href="{{ route('front.equipment.index') }}">Catalogue</a></li>
                 @auth
                     <li class="nav-item"><a class="nav-link {{ request()->routeIs('front.profile.*') ? 'active' : '' }}" href="{{ route('front.profile.edit') }}">Mon profil</a></li>
                 @endauth
             </ul>
             <div class="d-flex align-items-center gap-2">
                 @auth
+                    <a href="{{ route('front.equipment.create') }}" class="btn btn-sun btn-sm"><i class="bi bi-plus-lg"></i> Proposer un équipement</a>
                     <div class="dropdown">
                         <button class="btn btn-outline-light btn-sm dropdown-toggle" data-bs-toggle="dropdown"><i class="bi bi-person-circle"></i> {{ auth()->user()->name }}</button>
                         <ul class="dropdown-menu dropdown-menu-end">
