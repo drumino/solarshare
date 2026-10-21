@@ -37,11 +37,15 @@ class Equipment extends Model
     protected $fillable = [
         'category_id', 'owner_id', 'title', 'description', 'type', 'power_watts',
         'capacity_wh', 'price_per_day', 'deposit', 'condition', 'city', 'status', 'image_path',
+        'reviews_count', 'reviews_avg', 'bayesian_score',
     ];
 
     protected $casts = [
         'price_per_day' => 'decimal:2',
         'deposit' => 'decimal:2',
+        'reviews_count' => 'integer',
+        'reviews_avg' => 'decimal:2',
+        'bayesian_score' => 'decimal:3',
     ];
 
     public function category(): BelongsTo
@@ -84,5 +88,19 @@ class Equipment extends Model
         $avg = $this->reviews()->where('is_visible', true)->avg('rating');
 
         return $avg ? round($avg, 1) : null;
+    }
+
+    public function isTopRated(): bool
+    {
+        $minAvg = (float) config('solarshare.reviews.top_rated_min_avg', 4.5);
+        $minCount = (int) config('solarshare.reviews.top_rated_min_count', 10);
+
+        return (int) $this->reviews_count >= $minCount
+            && (float) $this->reviews_avg >= $minAvg;
+    }
+
+    public function getIsTopRatedAttribute(): bool
+    {
+        return $this->isTopRated();
     }
 }

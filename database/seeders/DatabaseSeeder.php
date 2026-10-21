@@ -81,7 +81,7 @@ class DatabaseSeeder extends Seeder
         $v3 = $review($r3, 2, 'Batterie décevante : elle ne tenait pas la charge annoncée et le câble était abîmé.', 'negative', -0.6);
         $v4 = $review($r4, 1, 'Vendeur nul et idiot, ne louez pas chez lui !', 'negative', -0.9, false, 'Langage inapproprié détecté');
 
-        ReviewReport::create(['review_id' => $v2->id, 'user_id' => $karim->id, 'reason' => 'fake', 'details' => 'Je pense que cet avis est complaisant.', 'status' => 'open']);
-        ReviewReport::create(['review_id' => $v4->id, 'user_id' => $sami->id, 'reason' => 'offensive', 'details' => null, 'status' => 'resolved']);
+        ReviewReport::create(['review_id' => $v2->id, 'user_id' => $karim->id, 'reason' => 'fake', 'details' => 'Je pense que cet avis est complaisant.', 'status' => 'pending']);
+        ReviewReport::create(['review_id' => $v4->id, 'user_id' => $sami->id, 'reason' => 'offensive', 'details' => null, 'status' => 'reviewed']);
     }
 }

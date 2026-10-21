@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Http\Requests\ReviewRequest;
+use App\Models\Equipment;
 use App\Models\Reservation;
 use App\Models\Review;
 use App\Services\Ai\ReviewAnalyzer;
@@ -16,18 +17,24 @@ class ReviewController extends Controller
 {
     public function index(Request $request): View
     {
+        $equipmentId = $request->input('equipment_id');
+        if (! is_null($equipmentId) && (! is_numeric($equipmentId) || ! Equipment::whereKey((int) $equipmentId)->exists())) {
+            $equipmentId = null;
+        }
+        $equipment = Equipment::query()->orderBy('title')->get(['id', 'title']);
         $reviews = Review::query()
             ->join('equipment', 'equipment.id', '=', 'reviews.equipment_id')
             ->join('users', 'users.id', '=', 'reviews.user_id')
             ->select('reviews.*', 'equipment.title as equipment_title', 'users.name as user_name')
             ->withCount('reports')
+            ->when($equipmentId, fn ($q) => $q->where('reviews.equipment_id', (int) $equipmentId))
             ->when($request->sentiment, fn ($q, $v) => $q->where('reviews.sentiment', $v))
             ->when($request->visible !== null && $request->visible !== '', fn ($q) => $q->where('reviews.is_visible', $request->boolean('visible')))
             ->when($request->q, fn ($q, $v) => $q->where('reviews.comment', 'like', "%{$v}%"))
             ->latest('reviews.created_at')
             ->paginate(10)->withQueryString();
 
-        return view('admin.reviews.index', compact('reviews'));
+        return view('admin.reviews.index', compact('reviews', 'equipment'));
     }
 
     public function create(): View

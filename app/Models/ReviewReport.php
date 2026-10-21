@@ -14,17 +14,40 @@ class ReviewReport extends Model
         'other' => 'Autre',
     ];
 
-    public const STATUSES = ['open' => 'Ouvert', 'resolved' => 'Traité', 'dismissed' => 'Rejeté'];
+    public const STATUSES = ['pending' => 'En attente', 'reviewed' => 'Traité', 'dismissed' => 'Rejeté'];
 
-    protected $fillable = ['review_id', 'user_id', 'reason', 'details', 'status'];
+    public const SEVERITIES = ['low' => 'Faible', 'medium' => 'Moyen', 'high' => 'Élevé'];
+
+    public const CATEGORIES = ['insulte', 'arnaque', 'spam', 'donnees_personnelles', 'harcelement', 'autre'];
+
+    public const ACTIONS = ['masquer', 'ignorer', 'avertir'];
+
+    protected $fillable = [
+        'review_id', 'user_id', 'reason', 'details', 'status', 'severity',
+        'category', 'suggested_action', 'reviewed_by', 'reviewed_at',
+    ];
+
+    protected $casts = [
+        'reviewed_at' => 'datetime',
+    ];
 
     public function review(): BelongsTo
     {
         return $this->belongsTo(Review::class);
     }
 
+    public function reporter(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'user_id');
+    }
+
     public function user(): BelongsTo
     {
-        return $this->belongsTo(User::class);
+        return $this->reporter();
+    }
+
+    public function reviewer(): BelongsTo
+    {
+        return $this->belongsTo(User::class, 'reviewed_by');
     }
 }

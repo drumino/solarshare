@@ -22,6 +22,7 @@ class ReviewReportController extends Controller
             ->select('review_reports.*', 'reviews.comment as review_comment', 'reviews.is_visible as review_visible', 'users.name as reporter_name')
             ->when($request->status, fn ($q, $v) => $q->where('review_reports.status', $v))
             ->when($request->reason, fn ($q, $v) => $q->where('review_reports.reason', $v))
+            ->orderByRaw("CASE review_reports.severity WHEN 'high' THEN 1 WHEN 'medium' THEN 2 WHEN 'low' THEN 3 ELSE 4 END")
             ->latest('review_reports.created_at')
             ->paginate(10)->withQueryString();
 
@@ -30,7 +31,7 @@ class ReviewReportController extends Controller
 
     public function create(): View
     {
-        return view('admin.review-reports.form', $this->formData(new ReviewReport(['status' => 'open'])));
+        return view('admin.review-reports.form', $this->formData(new ReviewReport(['status' => 'pending'])));
     }
 
     public function store(ReviewReportRequest $request): RedirectResponse
@@ -52,6 +53,40 @@ class ReviewReportController extends Controller
         $this->applyDecision($request, $reviewReport);
 
         return redirect()->route('admin.review-reports.index')->with('success', 'Signalement mis à jour.');
+    }
+
+    public function show(ReviewReport $reviewReport): View
+    {
+        $reviewReport->load(['review', 'review.user', 'reporter', 'reviewer']);
+
+        return view('admin.review-reports.show', ['report' => $reviewReport]);
+    }
+
+    public function traiter(Request $request, ReviewReport $reviewReport): RedirectResponse
+    {
+        $reviewReport->update([
+            'status' => 'reviewed',
+            'reviewed_by' => auth()->id(),
+            'reviewed_at' => now(),
+        ]);
+        if ($request->boolean('hide_review')) {
+            $reviewReport->review->hide('Masqué suite à un signalement.');
+        } elseif ($request->boolean('show_review')) {
+            $reviewReport->review->update(['is_visible' => true]);
+        }
+
+        return redirect()->route('admin.review-reports.index')->with('success', 'Signalement traité.');
+    }
+
+    public function rejeter(ReviewReport $reviewReport): RedirectResponse
+    {
+        $reviewReport->update([
+            'status' => 'dismissed',
+            'reviewed_by' => auth()->id(),
+            'reviewed_at' => now(),
+        ]);
+
+        return redirect()->route('admin.review-reports.index')->with('success', 'Signalement rejeté.');
     }
 
     public function destroy(ReviewReport $reviewReport): RedirectResponse

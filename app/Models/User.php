@@ -33,8 +33,13 @@ class User extends Authenticatable
         return $this->hasMany(Equipment::class, 'owner_id');
     }
 
-    public function reservations(): HasMany
-    {
-        return $this->hasMany(Reservation::class);
-    }
+public function reservations(): HasMany
+{
+    return $this->hasMany(Reservation::class);
+}
+
+public function reviewVotes(): HasMany
+{
+    return $this->hasMany(ReviewVote::class);
+}
 }

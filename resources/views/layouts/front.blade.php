@@ -33,7 +33,16 @@
                                 </form>
                             </li>
                         </ul>
-                    </div>
+@auth
+<span class="ms-2">
+    <a href="{{ route('notifications.index') }}" class="btn btn-outline-light btn-sm">
+        <i class="bi bi-bell"></i>
+        @if(auth()->user()->unreadNotifications()->count() > 0)
+            <span class="badge bg-danger">{{ auth()->user()->unreadNotifications()->count() }}</span>
+        @endif
+    </a>
+</span>
+@endauth
                 @else
                     <a href="{{ route('login') }}" class="btn btn-outline-light btn-sm">Connexion</a>
                     <a href="{{ route('register') }}" class="btn btn-sun btn-sm">Inscription</a>

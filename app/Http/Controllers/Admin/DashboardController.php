@@ -12,7 +12,7 @@ class DashboardController extends Controller
 {
     public function index(): View
     {
-        $openReports = ReviewReport::where('status', 'open')->count();
+        $openReports = ReviewReport::where('status', 'pending')->count();
 
         return view('admin.dashboard', [
             'kpis' => [

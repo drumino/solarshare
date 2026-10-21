@@ -13,16 +13,18 @@
     <a href="{{ route('admin.review-reports.create') }}" class="btn btn-warning"><i class="bi bi-plus-lg"></i> Nouveau signalement</a>
 </div>
 <div class="card card-ad"><div class="table-responsive"><table class="table align-middle mb-0">
-    <thead><tr><th>Avis signalé</th><th>Signalé par</th><th>Motif</th><th>Statut</th><th>Date</th><th></th></tr></thead>
+    <thead><tr><th>Avis signalé</th><th>Signalé par</th><th>Motif</th><th>Sévérité</th><th>Statut</th><th>Date</th><th></th></tr></thead>
     <tbody>
     @forelse($reports as $r)
         <tr><td class="small" style="max-width:300px">{{ \Illuminate\Support\Str::limit($r->review_comment, 80) }}
                 @unless($r->review_visible)<br><span class="badge text-bg-secondary">Avis masqué</span>@endunless</td>
             <td>{{ $r->reporter_name }}</td>
             <td>{{ \App\Models\ReviewReport::REASONS[$r->reason] ?? $r->reason }}@if($r->details)<br><small class="text-muted">{{ \Illuminate\Support\Str::limit($r->details, 50) }}</small>@endif</td>
+            @php $colors=['low'=>'success','medium'=>'warning','high'=>'danger']; @endphp
+            <td><span class="badge text-bg-{{ $colors[$r->severity] ?? 'secondary' }}">{{ \App\Models\ReviewReport::SEVERITIES[$r->severity] ?? $r->severity }}</span></td>
             <td><x-badge :status="$r->status" :labels="\App\Models\ReviewReport::STATUSES" /></td>
             <td>{{ $r->created_at->format('d/m/Y') }}</td>
-            <td class="text-end text-nowrap"><a href="{{ route('admin.review-reports.edit', $r) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-pencil"></i></a>
+            <td class="text-end text-nowrap"><a href="{{ route('admin.review-reports.show', $r) }}" class="btn btn-sm btn-outline-primary"><i class="bi bi-eye"></i></a>
                 @include('partials.delete', ['route' => route('admin.review-reports.destroy', $r)])</td></tr>
     @empty
         <tr><td colspan="6" class="text-center text-muted py-4">Aucun signalement.</td></tr>

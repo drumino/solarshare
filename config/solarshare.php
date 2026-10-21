@@ -18,4 +18,15 @@ return [
         'timeout'  => (int) env('AI_TIMEOUT', 20),
     ],
 
+    /*
+    |--------------------------------------------------------------------------
+    | Avis et classement bayésien des équipements
+    |--------------------------------------------------------------------------
+    */
+    'reviews' => [
+        'top_rated_min_avg'  => 4.5,
+        'top_rated_min_count' => 10,
+        'bayesian_m'         => 5,
+    ],
+
 ];
